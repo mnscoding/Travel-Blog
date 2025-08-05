@@ -1,52 +1,3 @@
-
-/*
-import { usePostsContext } from "../hooks/usePostsContext";
-import { useAuthContext } from "../hooks/useAuthContext";
-//date fns
-import formatDistanceToNow from "date-fns/formatDistanceToNow";
-
-const PostDetails = ({ post }) => {
-  const { dispatch } = usePostsContext();
-  const { user } = useAuthContext();
-
-  const handleClick = async () => {
-    if (!user) {
-      return;
-    }
-    const response = await fetch("/api/posts/" + post._id, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${user.token}`,
-      },
-    });
-    const json = await response.json();
-
-    if (response.ok) {
-      dispatch({ type: "DELETE_POST", paydescription: json });
-    }
-  };
-
-  return (
-    <div className="post-details">
-      <h4>{post.location}</h4>
-      <p>
-        <strong>description: </strong>
-        {post.description}
-      </p>
-
-      <p>
-        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
-      </p>
-      <span className="material-symbols-outlined " onClick={handleClick}>
-        delete
-      </span>
-    </div>
-  );
-};
-
-export default PostDetails;*/
-
-/*06.23
 import {
   Box,
   Typography,
@@ -54,642 +5,535 @@ import {
   Paper,
   Chip,
   Stack,
+  Tooltip,
+  Modal,
+  Avatar,
+  TextField,
+  Button,
   Divider,
+  Collapse,
+  Badge,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import PlaceIcon from "@mui/icons-material/Place";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { usePostsContext } from "../hooks/usePostsContext";
-import { useAuthContext } from "../hooks/useAuthContext";
-import formatDistanceToNow from "date-fns/formatDistanceToNow";
-
-const PostDetails = ({ post }) => {
-  const { dispatch } = usePostsContext();
-  const { user } = useAuthContext();
-
-  const handleClick = async () => {
-    if (!user) return;
-    const response = await fetch("/api/posts/" + post._id, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${user.token}` },
-    });
-    const json = await response.json();
-    if (response.ok) {
-      dispatch({ type: "DELETE_POST", payload: json });
-    }
-  };
-
-  return (
-    <Paper
-      elevation={2}
-      sx={{
-        borderRadius: 2,
-        display: "flex",
-        flexDirection: "column",
-        height: "100%", // ensures cards are same height
-        overflow: "hidden",
-      }}
-    >
-      
-      <Box
-        sx={{
-          height: 200,
-          overflow: "hidden",
-          width: "100%",
-        }}
-      >
-        <img
-          src={`/uploads/${post.photo}`}
-          alt={post.location}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
-      </Box>
-
-      
-      <Box
-        sx={{
-          px: 2,
-          py: 1,
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 1,
-        }}
-      >
-        <IconButton size="small">
-          <FavoriteIcon sx={{ color: "#FFD700" }} />
-        </IconButton>
-        {user && (
-          <IconButton onClick={handleClick} size="small">
-            <DeleteIcon sx={{ color: "#333" }} />
-          </IconButton>
-        )}
-      </Box>
-
-      <Box sx={{ px: 2, pb: 2, flexGrow: 1 }}>
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: 600,
-            textTransform: "capitalize",
-            mb: 1,
-            lineHeight: 1.2,
-          }}
-        >
-          {post.location}
-        </Typography>
-
-        <Stack direction="row" spacing={1} mb={1}>
-          <Chip
-            icon={<PlaceIcon fontSize="small" />}
-            label={post.country || "Unknown"}
-            size="small"
-            variant="outlined"
-          />
-          <Chip
-            icon={<AccessTimeIcon fontSize="small" />}
-            label={formatDistanceToNow(new Date(post.createdAt), {
-              addSuffix: true,
-            })}
-            size="small"
-            variant="outlined"
-          />
-        </Stack>
-
-        <Divider sx={{ my: 1 }} />
-
-        <Typography
-          variant="body2"
-          sx={{
-            fontSize: "0.95rem",
-            color: "#555",
-            lineHeight: 1.5,
-            display: "-webkit-box",
-            WebkitBoxOrient: "vertical",
-            WebkitLineClamp: 3,
-            overflow: "hidden",
-          }}
-        >
-          {post.description}
-        </Typography>
-      </Box>
-    </Paper>
-  );
-};
-
-export default PostDetails;*/
-
-/*06.24
 import {
-  Box,
-  Typography,
-  IconButton,
-  Paper,
-  Chip,
-  Stack,
-  Tooltip,
-  Modal,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import PlaceIcon from "@mui/icons-material/Place";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
+  Delete as DeleteIcon,
+  Favorite as FavoriteIcon,
+  FavoriteBorder as FavoriteBorderIcon,
+  Place as PlaceIcon,
+  Comment as CommentIcon,
+  Send as SendIcon,
+  Bookmark as BookmarkIcon,
+  BookmarkBorder as BookmarkBorderIcon,
+  Share as ShareIcon,
+  Close as CloseIcon,
+  MoreVert as MoreVertIcon,
+  ExpandMore as ExpandMoreIcon,
+} from "@mui/icons-material";
+import { useState, useRef, useEffect } from "react";
+import formatDistanceToNow from "date-fns/formatDistanceToNow";
 import { usePostsContext } from "../hooks/usePostsContext";
 import { useAuthContext } from "../hooks/useAuthContext";
-import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { useState } from "react";
-
-const PostDetails = ({ post }) => {
-  const { dispatch } = usePostsContext();
-  const { user } = useAuthContext();
-  const [openModal, setOpenModal] = useState(false);
-
-  const handleDelete = async () => {
-    if (!user) return;
-    const response = await fetch("/api/posts/" + post._id, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${user.token}` },
-    });
-    const json = await response.json();
-    if (response.ok) {
-      dispatch({ type: "DELETE_POST", payload: json });
-    }
-  };
-
-  const handleToggleStatus = async () => {
-    if (!user) return;
-    const response = await fetch("/api/posts/toggle-status/" + post._id, {
-      method: "PATCH",
-      headers: { Authorization: `Bearer ${user.token}` },
-    });
-    const json = await response.json();
-    if (response.ok) {
-      dispatch({ type: "UPDATE_POST", payload: json }); // ✅ IMPORTANT
-    }
-  };
-
-  return (
-    <>
-      
-      <Paper
-        elevation={2}
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          borderRadius: 3,
-          overflow: "hidden",
-          width: "100%",
-        }}
-      >
-        
-        <Box
-          onClick={() => setOpenModal(true)}
-          sx={{
-            width: { xs: "100%", sm: "300px" },
-            height: { xs: 200, sm: "100%" },
-            flexShrink: 0,
-            cursor: "pointer",
-          }}
-        >
-          <img
-            src={`/uploads/${post.photo}`}
-            alt={post.location}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
-        </Box>
-
-        
-        <Box
-          sx={{
-            p: 2,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            flexGrow: 1,
-          }}
-        >
-          <Box>
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: 600, textTransform: "capitalize", mb: 1 }}
-            >
-              {post.location}
-            </Typography>
-
-            <Stack direction="row" spacing={1} mb={1}>
-              <Chip
-                icon={<PlaceIcon fontSize="small" />}
-                label={post.country || "Unknown"}
-                size="small"
-              />
-              <Chip
-                icon={<AccessTimeIcon fontSize="small" />}
-                label={formatDistanceToNow(new Date(post.createdAt), {
-                  addSuffix: true,
-                })}
-                size="small"
-              />
-            </Stack>
-
-            <Typography
-              variant="body2"
-              sx={{
-                color: "text.secondary",
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-                mb: 2,
-              }}
-            >
-              {post.description}
-            </Typography>
-          </Box>
-
-         
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Tooltip
-              title={post.status === "public" ? "make private" : "make public"}
-            >
-              <IconButton size="small" onClick={handleToggleStatus}>
-                <FavoriteIcon
-                  color={post.status === "public" ? "error" : "inherit"}
-                />
-              </IconButton>
-            </Tooltip>
-            {user && (
-              <Tooltip title="Delete">
-                <IconButton size="small" onClick={handleDelete}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
-            )}
-          </Box>
-        </Box>
-      </Paper>
-
-      
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            bgcolor: "transparent",
-            p: 0,
-            borderRadius: 0,
-            maxWidth: "95vw",
-            maxHeight: "95vh",
-            outline: "none",
-          }}
-        >
-          <img
-            src={`/uploads/${post.photo}`}
-            alt="Full View"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "contain",
-              border: "none",
-            }}
-          />
-        </Box>
-      </Modal>
-    </>
-  );
-};
-
-export default PostDetails;*/
-
-
-/*08.02
-
-import {
-  Box,
-  Typography,
-  IconButton,
-  Paper,
-  Chip,
-  Stack,
-  Tooltip,
-  Modal,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import FavoriteIcon from "@mui/icons-material/Favorite";
-import PlaceIcon from "@mui/icons-material/Place";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { usePostsContext } from "../hooks/usePostsContext";
-import { useAuthContext } from "../hooks/useAuthContext";
-import formatDistanceToNow from "date-fns/formatDistanceToNow";
-import { useState } from "react";
 
 const PostDetails = ({ post, hideStatusToggle = false }) => {
   const { dispatch } = usePostsContext();
   const { user } = useAuthContext();
   const [openModal, setOpenModal] = useState(false);
-
-
-
-  //comments
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState(post.comments || []);
   const [loadingComment, setLoadingComment] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [showReadMore, setShowReadMore] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const descriptionRef = useRef(null);
+  const username = user?.email || "Anonymous";
 
-  const User = user.email;
-
-  const handleToggleComments = () => {
-    setShowComments((prev) => !prev);
-  };
+  useEffect(() => {
+    if (descriptionRef.current) {
+      const needsReadMore =
+        descriptionRef.current.scrollHeight >
+        descriptionRef.current.clientHeight;
+      setShowReadMore(needsReadMore);
+    }
+  }, [post.description]);
 
   const handleAddComment = async () => {
     if (!commentText.trim()) return;
-
-    if (!user) {
-      alert("Please log in to add comments.");
-      return;
-    }
+    if (!user) return alert("Please log in to comment");
 
     setLoadingComment(true);
-
     try {
-      const response = await fetch(`/api/posts/${post._id}/comments`, {
+      const res = await fetch(`/api/posts/${post._id}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${user.token}`,
         },
-        body: JSON.stringify({ user: User, text: commentText }),
+        body: JSON.stringify({ user: username, text: commentText }),
       });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Update local comments state with new comment from server
+      const data = await res.json();
+      if (res.ok) {
         setComments(data.comments);
         setCommentText("");
-      } else {
-        alert(data.error || "Failed to add comment");
-      }
-    } catch (err) {
-      alert("Something went wrong.");
+      } else alert(data.error);
+    } catch {
+      alert("Error posting comment");
     } finally {
       setLoadingComment(false);
     }
   };
 
-
   const handleDelete = async () => {
     if (!user) return;
-    const response = await fetch("/api/posts/" + post._id, {
+    const res = await fetch(`/api/posts/${post._id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${user.token}` },
     });
-    const json = await response.json();
-    if (response.ok) {
-      dispatch({ type: "DELETE_POST", payload: json });
-    }
+    const data = await res.json();
+    if (res.ok) dispatch({ type: "DELETE_POST", payload: data });
   };
 
   const handleToggleStatus = async () => {
     if (!user) return;
-    const response = await fetch("/api/posts/toggle-status/" + post._id, {
+    const res = await fetch(`/api/posts/toggle-status/${post._id}`, {
       method: "PATCH",
       headers: { Authorization: `Bearer ${user.token}` },
     });
-    const json = await response.json();
-    if (response.ok) {
-      dispatch({ type: "UPDATE_POST", payload: json });
-    }
+    const data = await res.json();
+    if (res.ok) dispatch({ type: "UPDATE_POST", payload: data });
+  };
+
+  const toggleDescription = () => {
+    setIsExpanded(!isExpanded);
   };
 
   return (
-    <>
-
-      
-
-      
-
+    <Box sx={{ mb: showComments ? 0 : 3 }}>
       <Paper
-        elevation={2}
+        elevation={0}
         sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
           borderRadius: 3,
           overflow: "hidden",
-          width: "100%",
+          border: "1px solid",
+          borderColor: "divider",
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
         }}
       >
-
-        
-
-     
-
+        {/* Image Section (Left) */}
         <Box
           onClick={() => setOpenModal(true)}
           sx={{
-            width: { xs: "100%", sm: "300px" },
-            height: { xs: 200, sm: "100%" },
-            flexShrink: 0,
+            width: { xs: "100%", sm: "40%" },
+            minWidth: { sm: "40%" },
+            height: { xs: 250, sm: 320 },
             cursor: "pointer",
+            position: "relative",
+            overflow: "hidden",
+            "&:hover img": {
+              transform: "scale(1.03)",
+            },
           }}
         >
           <img
             src={`/uploads/${post.photo}`}
-            alt={post.location}
+            alt="post"
             style={{
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              display: "block",
+              transition: "transform 0.3s ease",
             }}
           />
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              p: 2,
+              background:
+                "linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 100%)",
+              color: "white",
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <PlaceIcon fontSize="small" />
+              <Typography fontWeight={600}>{post.location}</Typography>
+            </Stack>
+          </Box>
         </Box>
 
-
+        {/* Content Section (Right) */}
         <Box
           sx={{
-            p: 2,
+            flex: 1,
+            p: 3,
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            flexGrow: 1,
           }}
         >
           <Box>
-            <Typography
-              variant="h6"
-              sx={{ fontWeight: 600, textTransform: "capitalize", mb: 1 }}
-            >
-              {post.location}
-            </Typography>
+            {/* User Header */}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+              <Avatar sx={{ width: 40, height: 40, mr: 2 }} />
+              <Box flex={1}>
+                <Typography fontWeight={600}>
+                  {post.user_id?.email || "Travel Enthusiast"}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {formatDistanceToNow(new Date(post.createdAt), {
+                    addSuffix: true,
+                  })}
+                </Typography>
+              </Box>
+              {!hideStatusToggle && user && (
+                <IconButton size="small">
+                  <MoreVertIcon />
+                </IconButton>
+              )}
+            </Box>
 
-            <Stack direction="row" spacing={1} mb={1}>
-              <Chip
-                icon={<PlaceIcon fontSize="small" />}
-                label={post.country || "Unknown"}
-                size="small"
-              />
-              <Chip
-                icon={<AccessTimeIcon fontSize="small" />}
-                label={formatDistanceToNow(new Date(post.createdAt), {
-                  addSuffix: true,
-                })}
-                size="small"
-              />
-            </Stack>
-
-            <Typography
-              variant="body2"
+            {/* Description with Read More */}
+            <Box
+              ref={descriptionRef}
               sx={{
-                color: "text.secondary",
-                display: "-webkit-box",
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
                 mb: 2,
+                whiteSpace: "pre-line",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitLineClamp: isExpanded ? "none" : 6,
+                WebkitBoxOrient: "vertical",
+                maxHeight: isExpanded ? "none" : "144px", // 6 lines * 24px line height
               }}
             >
-              {post.description}
-            </Typography>
+              <Typography>{post.description}</Typography>
+            </Box>
+
+            {showReadMore && (
+              <Button
+                size="small"
+                onClick={toggleDescription}
+                endIcon={
+                  <ExpandMoreIcon
+                    sx={{
+                      transform: isExpanded ? "rotate(180deg)" : "none",
+                      transition: "transform 0.3s ease",
+                    }}
+                  />
+                }
+                sx={{
+                  textTransform: "none",
+                  color: "text.secondary",
+                  mb: 2,
+                  p: 0,
+                }}
+              >
+                {isExpanded ? "Show less" : "Read more"}
+              </Button>
+            )}
+
+            {/* Tags */}
+            {post.tags?.length > 0 && (
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ mb: 2 }}
+                flexWrap="wrap"
+                useFlexGap
+              >
+                {post.tags.map((tag, i) => (
+                  <Chip
+                    key={i}
+                    label={tag}
+                    size="small"
+                    sx={{
+                      bgcolor: "primary.light",
+                      color: "white",
+                      fontSize: "0.7rem",
+                    }}
+                  />
+                ))}
+              </Stack>
+            )}
           </Box>
 
-
-          
-          {post.status === "public" && (
-            <Box mt={2}>
-              <Chip
-                label={
-                  showComments
-                    ? "Hide Comments"
-                    : `Show Comments (${comments.length})`
-                }
-                onClick={handleToggleComments}
-                clickable
-                color="primary"
-              />
-            </Box>
-          )}
-
-        
-          {showComments && (
-            <Box mt={2} sx={{ maxHeight: 300, overflowY: "auto" }}>
-              
-              {comments.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" mb={1}>
-                  No comments yet.
-                </Typography>
-              ) : (
-                comments.map((c, i) => (
-                  <Paper key={i} sx={{ p: 1, mb: 1 }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
-                      {c.user}
-                    </Typography>
-                    <Typography variant="body2">{c.text}</Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {c.createdAt
-                        ? new Date(c.createdAt).toLocaleString()
-                        : "Unknown date"}
-                    </Typography>
-                  </Paper>
-                ))
-              )}
-
-              
-              {user ? (
-                <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
-                  <textarea
-                    value={commentText}
-                    onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Add a comment..."
-                    rows={3}
-                    style={{ flexGrow: 1, resize: "vertical", padding: 8 }}
-                  />
-                  <button
-                    onClick={handleAddComment}
-                    disabled={loadingComment || !commentText.trim()}
-                    style={{ padding: "8px 16px", cursor: "pointer" }}
+          {/* Action Buttons */}
+          <Box>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                pt: 1,
+                borderTop: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Stack direction="row" spacing={0.5}>
+                <Tooltip title={liked ? "Unlike" : "Like"}>
+                  <IconButton
+                    onClick={() => setLiked(!liked)}
+                    sx={{ color: liked ? "error.main" : "inherit" }}
                   >
-                    {loadingComment ? "Posting..." : "Post"}
-                  </button>
-                </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Please log in to comment.
-                </Typography>
-              )}
+                    {liked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Comments">
+                  <IconButton onClick={() => setShowComments(!showComments)}>
+                    {/*<Badge
+                      badgeContent={comments.length}
+                      color="primary"
+                      max={99}
+                    >
+                      <CommentIcon />
+                    </Badge>*/}
+                    <Stack direction="row" alignItems="center" spacing={0.5}>
+                      <CommentIcon />
+                      <Typography variant="body2" color="text.secondary">
+                        {comments.length}
+                      </Typography>
+                    </Stack>
+                  </IconButton>
+                </Tooltip>
+
+                <Tooltip title="Share">
+                  <IconButton>
+                    <ShareIcon />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+
+              <Tooltip title={bookmarked ? "Remove bookmark" : "Save"}>
+                <IconButton onClick={() => setBookmarked(!bookmarked)}>
+                  {bookmarked ? (
+                    <BookmarkIcon color="primary" />
+                  ) : (
+                    <BookmarkBorderIcon />
+                  )}
+                </IconButton>
+              </Tooltip>
             </Box>
-          )}
 
-          
-
-          <Box sx={{ display: "flex", gap: 1 }}>
-            {!hideStatusToggle && (
-              <Tooltip
-                title={
-                  post.status === "public" ? "make private" : "make public"
-                }
-              >
-                <IconButton size="small" onClick={handleToggleStatus}>
-                  <FavoriteIcon
-                    color={post.status === "public" ? "error" : "inherit"}
-                  />
-                </IconButton>
-              </Tooltip>
-            )}
+            {/* Admin Controls */}
             {!hideStatusToggle && user && (
-              <Tooltip title="Delete">
-                <IconButton size="small" onClick={handleDelete}>
-                  <DeleteIcon />
-                </IconButton>
-              </Tooltip>
+              <Box
+                sx={{
+                  mt: 2,
+                  pt: 1,
+                  borderTop: "1px dashed",
+                  borderColor: "divider",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: 1,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  size="small"
+                  /*startIcon={
+                    post.status === "public" ? (
+                      <FavoriteIcon color="error" />
+                    ) : (
+                      <FavoriteBorderIcon />
+                    )
+                  }*/
+                  onClick={handleToggleStatus}
+                  sx={{ borderRadius: 20 }}
+                >
+                  {post.status === "public" ? "Public" : "Private"}
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="black"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleDelete}
+                  sx={{ borderRadius: 20 }}
+                >
+                  Delete
+                </Button>
+              </Box>
             )}
           </Box>
         </Box>
       </Paper>
 
+      {/* Comments Section */}
+      <Collapse in={showComments}>
+        <Paper
+          elevation={0}
+          sx={{
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
+            borderTop: "1px solid",
+            borderColor: "divider",
+            p: 3,
+            mb: 3,
+          }}
+        >
+          <Typography variant="h6" fontWeight={600} mb={2}>
+            Comments ({comments.length})
+          </Typography>
 
-    
+          {comments.length === 0 ? (
+            <Typography color="text.secondary" textAlign="center" py={2}>
+              No comments yet. Be the first to share your thoughts!
+            </Typography>
+          ) : (
+            <Box
+              sx={{
+                maxHeight: 300,
+                overflowY: "auto",
+                pr: 1,
+                "&::-webkit-scrollbar": {
+                  width: 6,
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  backgroundColor: "grey.400",
+                  borderRadius: 3,
+                },
+              }}
+            >
+              {comments.map((comment, index) => (
+                <Box key={index} mb={2}>
+                  <Box display="flex" alignItems="center" mb={1}>
+                    <Avatar sx={{ width: 32, height: 32, mr: 1.5 }} />
+                    <Box>
+                      <Typography fontWeight={600} fontSize="0.9rem">
+                        {comment.user}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {comment.createdAt
+                          ? formatDistanceToNow(new Date(comment.createdAt), {
+                              addSuffix: true,
+                            })
+                          : "Just now"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Typography variant="body2" sx={{ pl: 4.5 }}>
+                    {comment.text}
+                  </Typography>
+                  {index < comments.length - 1 && <Divider sx={{ my: 2 }} />}
+                </Box>
+              ))}
+            </Box>
+          )}
 
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+          {/* Add Comment Form */}
+          <Box sx={{ mt: 3 }}>
+            <Box display="flex" alignItems="center" gap={1.5}>
+              <Avatar sx={{ width: 40, height: 40 }} />
+              <TextField
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Add a comment..."
+                fullWidth
+                multiline
+                rows={2}
+                size="small"
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: 2,
+                  },
+                }}
+              />
+            </Box>
+            <Box display="flex" justifyContent="flex-end" mt={1}>
+              <Button
+                variant="contained"
+                endIcon={<SendIcon />}
+                disabled={!commentText.trim() || loadingComment}
+                onClick={handleAddComment}
+                sx={{ borderRadius: 2 }}
+              >
+                {loadingComment ? "Posting..." : "Post Comment"}
+              </Button>
+            </Box>
+          </Box>
+        </Paper>
+      </Collapse>
+
+      {/* Full Image Modal */}
+      <Modal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(0,0,0,0.8)",
+          },
+        }}
+      >
         <Box
           sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            bgcolor: "transparent",
-            p: 0,
-            borderRadius: 0,
-            maxWidth: "95vw",
-            maxHeight: "95vh",
             outline: "none",
+            maxWidth: "90vw",
+            maxHeight: "90vh",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
           }}
         >
+          <IconButton
+            onClick={() => setOpenModal(false)}
+            sx={{
+              position: "absolute",
+              top: 8,
+              right: 8,
+              zIndex: 1,
+              color: "white",
+              bgcolor: "rgba(0,0,0,0.5)",
+              "&:hover": {
+                bgcolor: "rgba(0,0,0,0.7)",
+              },
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
           <img
             src={`/uploads/${post.photo}`}
-            alt="Full View"
-            style={{ width: "100%", height: "100%", objectFit: "contain" }}
+            alt="full"
+            style={{
+              maxHeight: "80vh",
+              maxWidth: "100%",
+              objectFit: "contain",
+              borderRadius: 8,
+            }}
           />
+          {/*<Paper
+            sx={{
+              width: "100%",
+              p: 2,
+              mt: 1,
+              borderRadius: 2,
+              bgcolor: "background.paper",
+            }}
+          >
+            <Typography variant="h6" fontWeight={600}>
+              {post.location}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {post.description}
+            </Typography>
+          </Paper>*/}
         </Box>
       </Modal>
-    </>
+    </Box>
   );
 };
 
+export default PostDetails;
 
-export default PostDetails;*/
-
+/*08.05
 import {
   Box,
   Typography,
@@ -820,14 +664,14 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
           transition: "all 0.3s ease",
         }}
       >
-        {/* Main content (image + details) */}
+        
         <Box
           sx={{
             flex: showComments ? "0 0 60%" : "1",
             transition: "all 0.3s ease",
           }}
         >
-          {/* Header with user info */}
+          
           <Box
             sx={{
               display: "flex",
@@ -861,7 +705,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
             </Box>
           </Box>
 
-          {/* Image */}
+         
           <Box
             onClick={() => setOpenModal(true)}
             sx={{
@@ -885,9 +729,9 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
             />
           </Box>
 
-          {/* Content section */}
+          
           <Box sx={{ p: 2 }}>
-            {/* Location */}
+           
             <Box sx={{ mb: 1.5 }}>
               <Stack
                 direction="row"
@@ -909,7 +753,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
               </Stack>
             </Box>
 
-            {/* Description */}
+          
             <Typography
               variant="body1"
               sx={{
@@ -923,7 +767,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
               {post.description}
             </Typography>
 
-            {/* Tags */}
+            
             {post.tags && post.tags.length > 0 && (
               <Box sx={{ mb: 2 }}>
                 <Stack direction="row" spacing={0.5} flexWrap="wrap">
@@ -945,7 +789,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
               </Box>
             )}
 
-            {/* Action buttons */}
+            
             <Box
               sx={{
                 display: "flex",
@@ -993,7 +837,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
               </Tooltip>
             </Box>
 
-            {/* Admin controls */}
+            
             {!hideStatusToggle && user && (
               <Box
                 sx={{
@@ -1029,7 +873,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
           </Box>
         </Box>
 
-        {/* Comments section - appears on the right when toggled */}
+        
         {showComments && (
           <Box
             sx={{
@@ -1122,7 +966,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
               )}
             </Box>
 
-            {/* Add comment */}
+           
             <Box
               sx={{
                 p: 2,
@@ -1170,7 +1014,7 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
         )}
       </Paper>
 
-      {/* Image modal */}
+      
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <Box
           sx={{
@@ -1201,4 +1045,4 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
 };
 
 
-export default PostDetails;
+export default PostDetails;*/
