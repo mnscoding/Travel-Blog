@@ -8,6 +8,8 @@ const {
   togglePostStatus,
   getPublicPosts,
   addComment,
+  editComment,
+  deleteComment,
   upload,
 } = require("../controllers/postController");
 
@@ -29,5 +31,7 @@ router.delete("/:id", deletePost);
 router.patch("/toggle-status/:id", togglePostStatus);
 
 router.post("/:id/comments", addComment);
+router.patch("/:postId/comments/:commentId", editComment);
+router.delete("/:postId/comments/:commentId", deleteComment);
 
 module.exports = router;

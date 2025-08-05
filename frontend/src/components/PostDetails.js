@@ -47,6 +47,8 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const descriptionRef = useRef(null);
   const username = user?.email || "Anonymous";
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editedCommentText, setEditedCommentText] = useState("");
 
   useEffect(() => {
     if (descriptionRef.current) {
@@ -80,6 +82,51 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
       alert("Error posting comment");
     } finally {
       setLoadingComment(false);
+    }
+  };
+
+  const handleEditComment = async (commentId) => {
+    if (!editedCommentText.trim()) return;
+
+    try {
+      const res = await fetch(`/api/posts/${post._id}/comments/${commentId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${user.token}`,
+        },
+        body: JSON.stringify({ text: editedCommentText }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setComments(data.comments);
+        setEditingCommentId(null);
+        setEditedCommentText("");
+      } else alert(data.error);
+    } catch {
+      alert("Error editing comment");
+    }
+  };
+
+  const handleDeleteComment = async (commentId) => {
+    const confirm = window.confirm(
+      "Are you sure you want to delete this comment?"
+    );
+    if (!confirm) return;
+
+    try {
+      const res = await fetch(`/api/posts/${post._id}/comments/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setComments(data.comments);
+      } else alert(data.error);
+    } catch {
+      alert("Error deleting comment");
     }
   };
 
@@ -415,9 +462,66 @@ const PostDetails = ({ post, hideStatusToggle = false }) => {
                       </Typography>
                     </Box>
                   </Box>
-                  <Typography variant="body2" sx={{ pl: 4.5 }}>
+                  {/*<Typography variant="body2" sx={{ pl: 4.5 }}>
                     {comment.text}
-                  </Typography>
+                  </Typography>*/}
+                  <Box sx={{ pl: 4.5 }}>
+                    {editingCommentId === comment._id ? (
+                      <>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          multiline
+                          value={editedCommentText}
+                          onChange={(e) => setEditedCommentText(e.target.value)}
+                        />
+                        <Box mt={1} display="flex" gap={1}>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={() => handleEditComment(comment._id)}
+                          >
+                            Save
+                          </Button>
+                          <Button
+                            size="small"
+                            onClick={() => {
+                              setEditingCommentId(null);
+                              setEditedCommentText("");
+                            }}
+                          >
+                            Cancel
+                          </Button>
+                        </Box>
+                      </>
+                    ) : (
+                      <>
+                        <Typography variant="body2">{comment.text}</Typography>
+
+                        {user?.email === comment.user && (
+                          <Stack direction="row" spacing={1} mt={0.5}>
+                            <Button
+                              size="small"
+                              onClick={() => {
+                                setEditingCommentId(comment._id);
+                                setEditedCommentText(comment.text);
+                              }}
+                            >
+                              Edit
+                            </Button>
+                            <Button
+                              size="small"
+                              color="error"
+                              onClick={() => handleDeleteComment(comment._id)}
+                            >
+                              Delete
+                            </Button>
+                          </Stack>
+                        )}
+                      </>
+                    )}
+                  </Box>
+
                   {index < comments.length - 1 && <Divider sx={{ my: 2 }} />}
                 </Box>
               ))}

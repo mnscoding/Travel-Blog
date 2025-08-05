@@ -28,7 +28,7 @@ const upload = multer({ storage });
 const getPosts = async (req, res) => {
   const user_id = req.user._id;
   //const posts = await Post.find({ user_id }).sort({ createdAt: -1 });
-  const posts = await Post.find()
+  const posts = await Post.find({ user_id })
     .populate("user_id", "email") // ✅ Load email and name of user
     .sort({ createdAt: -1 });
 
@@ -75,7 +75,7 @@ const createPost = async (req, res) => {
     const user_id = req.user._id;
     const post = await Post.create({ location, description, photo, user_id });
 
-    res.status(200).json(post);
+    //res.status(200).json(post);
 
     // Populate the user email before sending the response
     const populatedPost = await Post.findById(post._id).populate(
@@ -195,6 +195,45 @@ const addComment = async (req, res) => {
   }
 };
 
+// PATCH /api/posts/:postId/comments/:commentId
+const editComment = async (req, res) => {
+  const { postId, commentId } = req.params;
+  const { text } = req.body;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    const comment = post.comments.id(commentId);
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    comment.text = text;
+    await post.save();
+    res.status(200).json({ comments: post.comments });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to edit comment" });
+  }
+};
+
+// DELETE /api/posts/:postId/comments/:commentId
+const deleteComment = async (req, res) => {
+  const { postId, commentId } = req.params;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) return res.status(404).json({ error: "Post not found" });
+
+    post.comments = post.comments.filter(
+      (comment) => comment._id.toString() !== commentId
+    );
+
+    await post.save();
+    res.status(200).json({ comments: post.comments });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete comment" });
+  }
+};
+
 module.exports = {
   upload, // export multer middleware
   createPost,
@@ -205,4 +244,6 @@ module.exports = {
   togglePostStatus,
   getPublicPosts,
   addComment,
+  editComment,
+  deleteComment,
 };
