@@ -8,7 +8,7 @@ const createProfile = async (req, res) => {
   const { name, dob, city, bio } = req.body;
 
   let emptyFields = [];
-  if (!name) emptyFields.push("name");
+  if (!name) emptyFields.push("name"); //hiii
   if (!dob) emptyFields.push("dob");
   if (!city) emptyFields.push("city");
   if (!bio) emptyFields.push("bio");
