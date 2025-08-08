@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Post from "./pages/Post";
 import PublicPost from "./pages/NewHome";
+import Profile from "./pages/Profile";
 
 function App() {
   const { user } = useAuthContext();
@@ -37,6 +38,10 @@ function App() {
             <Route
               path="/signup"
               element={!user ? <Signup /> : <Navigate to="/" />}
+            ></Route>
+            <Route
+              path="/profile"
+              element={user ? <Profile /> : <Login />}
             ></Route>
           </Routes>
         </div>

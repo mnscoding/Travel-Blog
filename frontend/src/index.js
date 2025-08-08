@@ -5,14 +5,16 @@ import App from "./App";
 import { WorkoutsContextProvider } from "./context/WorkoutContext";
 import { PostsContextProvider } from "./context/PostContext";
 import { AuthContextProvider } from "./context/AuthContext";
-
+import { ProfilesContextProvider } from "./context/ProfileContext";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <AuthContextProvider>
       <WorkoutsContextProvider>
         <PostsContextProvider>
-          <App />
+          <ProfilesContextProvider>
+            <App />
+          </ProfilesContextProvider>
         </PostsContextProvider>
       </WorkoutsContextProvider>
     </AuthContextProvider>

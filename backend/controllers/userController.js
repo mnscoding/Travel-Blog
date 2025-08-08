@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const jwt = require("jsonwebtoken");
+const Profile = require("../models/profileModel");
 
 const createToken = (_id) => {
   return jwt.sign({ _id }, process.env.SECRET, { expiresIn: "3d" });
@@ -30,6 +31,8 @@ const signupUser = async (req, res) => {
 
     //create a token
     const token = createToken(user._id);
+
+    // Automatically create a profile for the new user
 
     res.status(200).json({ email, token });
   } catch (error) {
