@@ -1,5 +1,11 @@
 const express = require("express");
-const { createProfile } = require("../controllers/profileController");
+const {
+  createProfile,
+  getProfile,
+  updateProfile,
+  getProfilePhoto,
+  getProfileByUserId,
+} = require("../controllers/profileController");
 const requireAuth = require("../middleware/requireAuth");
 const multer = require("multer");
 const path = require("path");
@@ -17,11 +23,16 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+router.get("/user/:userId", getProfileByUserId);
 // Protect routes
 router.use(requireAuth);
 
 // POST /api/profiles
 router.post("/", upload.single("photo"), createProfile);
+router.get("/", getProfile);
+router.put("/", upload.single("photo"), updateProfile);
+router.get("/photo", getProfilePhoto);
+// GET /api/profile/user/:userId
 
 module.exports = router;
 
