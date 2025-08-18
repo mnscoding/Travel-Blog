@@ -98,13 +98,14 @@ const updateProfile = async (req, res) => {
 
 const getProfilePhoto = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("profile.photo");
+    const user_id = req.user._id;
+    const profile = await Profile.findOne({ user_id }).select("photo");
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
+    if (!profile) {
+      return res.status(404).json({ error: "Profile not found" });
     }
 
-    res.json({ photo: user.profile.photo });
+    res.status(200).json({ photo: profile.photo });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

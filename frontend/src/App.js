@@ -9,6 +9,8 @@ import Signup from "./pages/Signup";
 import Post from "./pages/Post";
 import PublicPost from "./pages/NewHome";
 import Profile from "./pages/Profile";
+import Destination from "./pages/Destination";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const { user } = useAuthContext();
@@ -21,8 +23,18 @@ function App() {
           <Routes>
             <Route
               path="/"
-              element={user ? <Post /> : <Navigate to="/login" />}
-            ></Route>
+              element={
+                user ? (
+                  user.role === "Admin" ? (
+                    <Dashboard />
+                  ) : (
+                    <Post />
+                  )
+                ) : (
+                  <Navigate to="/login" />
+                )
+              }
+            />
             <Route
               path="/home"
               element={user ? <Home /> : <Navigate to="/login" />}
@@ -30,6 +42,10 @@ function App() {
             <Route
               path="/publicpost"
               element={user ? <PublicPost /> : <Navigate to="/login" />}
+            ></Route>
+            <Route
+              path="/destinations"
+              element={user ? <Destination /> : <Navigate to="/login" />}
             ></Route>
             <Route
               path="/login"

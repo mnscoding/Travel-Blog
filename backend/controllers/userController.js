@@ -16,12 +16,12 @@ const loginUser = async (req, res) => {
     //create a token
     const token = createToken(user._id);
 
-    res.status(200).json({ email, token });
+    res.status(200).json({ email, role: user.role, token });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
 };
-
+/*
 //signup user
 const signupUser = async (req, res) => {
   const { email, password } = req.body;
@@ -35,6 +35,17 @@ const signupUser = async (req, res) => {
     // Automatically create a profile for the new user
 
     res.status(200).json({ email, token });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+};*/
+
+const signupUser = async (req, res) => {
+  const { email, password } = req.body; // ✅ no role here
+  try {
+    const user = await User.signup(email, password);
+    const token = createToken(user._id);
+    res.status(200).json({ email, role: user.role, token });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
