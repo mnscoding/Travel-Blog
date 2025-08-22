@@ -7,6 +7,7 @@ const postRoutes = require("./routes/posts");
 const userRoutes = require("./routes/user");
 const profileRoutes = require("./routes/profile");
 const adminRoutes = require("./routes/admin");
+const destinationRoutes = require("./routes/destination");
 const cors = require("cors");
 //express app
 const app = express();
@@ -28,6 +29,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/destinations", destinationRoutes);
 
 //connect to db
 mongoose

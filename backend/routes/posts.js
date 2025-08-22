@@ -10,6 +10,10 @@ const {
   addComment,
   editComment,
   deleteComment,
+  addReply,
+  editReply,
+  deleteReply,
+  toggleLike,
   upload,
 } = require("../controllers/postController");
 
@@ -33,5 +37,12 @@ router.patch("/toggle-status/:id", togglePostStatus);
 router.post("/:id/comments", addComment);
 router.patch("/:postId/comments/:commentId", editComment);
 router.delete("/:postId/comments/:commentId", deleteComment);
+// In routes/posts.js
+// Add these new routes after your comment routes
+router.post("/:postId/comments/:commentId/replies", addReply);
+router.patch("/:postId/comments/:commentId/replies/:replyId", editReply);
+router.delete("/:postId/comments/:commentId/replies/:replyId", deleteReply);
+// Add this route to your posts routes
+router.post("/:id/like", toggleLike);
 
 module.exports = router;

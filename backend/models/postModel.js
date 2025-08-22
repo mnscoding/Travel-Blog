@@ -57,6 +57,22 @@ const postSchema = new Schema(
         user: { type: String },
         text: { type: String },
         createdAt: { type: Date, default: Date.now },
+        replies: [
+          {
+            user: { type: String },
+            text: { type: String },
+            createdAt: { type: Date, default: Date.now },
+          },
+        ],
+      },
+    ],
+    likes: [
+      {
+        user: String,
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
       },
     ],
   },
