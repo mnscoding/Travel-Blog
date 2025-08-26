@@ -19,7 +19,6 @@ export const postsReducer = (state, action) => {
         posts: state.posts.filter((w) => w._id !== action.payload._id),
       };
 
-    // ✅ Add this to handle update (like toggling status)
     case "UPDATE_POST":
       return {
         posts: state.posts.map((post) =>

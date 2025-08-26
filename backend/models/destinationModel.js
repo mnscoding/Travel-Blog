@@ -32,6 +32,7 @@ const destinationSchema = new Schema(
         "city",
         "religious",
         "adventure",
+        "garden",
       ],
     },
     photos: [

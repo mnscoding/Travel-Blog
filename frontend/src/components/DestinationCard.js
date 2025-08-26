@@ -281,32 +281,33 @@ import {
   CardContent,
   CardMedia,
   Typography,
-  Button,
   Chip,
   Box,
   IconButton,
-  Rating,
   Avatar,
   Tooltip,
   Menu,
   MenuItem,
+  Dialog,
+  DialogContent,
 } from "@mui/material";
 import {
   Favorite,
   FavoriteBorder,
   Place,
-  Share,
   MoreVert,
+  ArrowBackIos,
+  ArrowForwardIos,
 } from "@mui/icons-material";
 import { useAuthContext } from "../hooks/useAuthContext";
-import { useNavigate } from "react-router-dom";
 
 const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
   const { user } = useAuthContext();
-  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [profilePhoto, setProfilePhoto] = useState(null);
+  const [openImageDialog, setOpenImageDialog] = useState(false);
+  const [showFullDesc, setShowFullDesc] = useState(false);
 
   const isLiked =
     user && destination.likes?.some((like) => like.user === user.email);
@@ -338,19 +339,13 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
     onLike(destination._id);
   };
 
-  const handleMenuOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-  };
+  const handleMenuOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleMenuClose = () => setAnchorEl(null);
 
   const handleEdit = () => {
     onEdit(destination);
     handleMenuClose();
   };
-
   const handleDelete = () => {
     onDelete(destination._id);
     handleMenuClose();
@@ -370,10 +365,6 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
     );
   };
 
-  const handleCardClick = () => {
-    navigate(`/destinations/${destination._id}`);
-  };
-
   return (
     <Card
       sx={{
@@ -383,13 +374,14 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
         flexDirection: "column",
       }}
     >
+      {/* --- Image --- */}
       <Box sx={{ position: "relative" }}>
         <CardMedia
           component="img"
           height="250"
           image={`/uploads/destinations/${destination.photos?.[currentImageIndex]}`}
           alt={destination.title}
-          onClick={handleCardClick}
+          onClick={() => setOpenImageDialog(true)}
           sx={{
             cursor: "pointer",
             width: "100%",
@@ -436,9 +428,13 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
         <Box sx={{ position: "absolute", top: 8, left: 8 }}>
           <Chip
             label={destination.category}
-            color="primary"
             size="small"
-            sx={{ color: "white", fontWeight: "bold" }}
+            sx={{
+              backgroundColor: "rgba(0, 0, 0, 0.5)",
+              color: "white",
+              fontWeight: "bold",
+              boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.5)",
+            }}
           />
         </Box>
 
@@ -456,13 +452,9 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
         </Box>
       </Box>
 
+      {/* --- Content --- */}
       <CardContent sx={{ flexGrow: 1 }}>
-        <Typography
-          variant="h6"
-          gutterBottom
-          onClick={handleCardClick}
-          sx={{ cursor: "pointer" }}
-        >
+        <Typography variant="h6" gutterBottom>
           {destination.title}
         </Typography>
 
@@ -473,14 +465,42 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
           </Typography>
         </Box>
 
-        <Typography variant="body2" color="text.secondary" paragraph>
-          {destination.description.length > 100
-            ? `${destination.description.substring(0, 100)}...`
-            : destination.description}
+        {/* Description with inline Read more */}
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          paragraph
+          sx={{ display: "inline" }}
+        >
+          {showFullDesc ? (
+            destination.description
+          ) : destination.description.length > 100 ? (
+            <>
+              {destination.description.substring(0, 100)}
+              <span
+                onClick={() => setShowFullDesc(true)}
+                style={{ color: "#1976d2", cursor: "pointer", fontWeight: 500 }}
+              >
+                ... Read more
+              </span>
+            </>
+          ) : (
+            destination.description
+          )}
         </Typography>
+        {showFullDesc && destination.description.length > 100 && (
+          <span
+            onClick={() => setShowFullDesc(false)}
+            style={{ color: "#1976d2", cursor: "pointer", fontWeight: 500 }}
+          >
+            {" "}
+            Read less
+          </span>
+        )}
 
+        {/* Tags */}
         {destination.tags && destination.tags.length > 0 && (
-          <Box sx={{ mb: 2 }}>
+          <Box sx={{ mt: 1, mb: 2 }}>
             {destination.tags.slice(0, 3).map((tag, index) => (
               <Chip
                 key={index}
@@ -503,7 +523,6 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
             Best time: {destination.bestTimeToVisit}
           </Typography>
         )}
-
         {destination.estimatedCost && (
           <Typography
             variant="caption"
@@ -516,6 +535,7 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
         )}
       </CardContent>
 
+      {/* --- Bottom Section --- */}
       <Box
         sx={{
           p: 2,
@@ -547,6 +567,54 @@ const DestinationCard = ({ destination, onLike, onEdit, onDelete }) => {
         </Box>
       </Box>
 
+      {/* --- Full Image Dialog --- */}
+      <Dialog
+        open={openImageDialog}
+        onClose={() => setOpenImageDialog(false)}
+        maxWidth="md"
+      >
+        <DialogContent sx={{ p: 0, position: "relative", bgcolor: "black" }}>
+          <img
+            src={`/uploads/destinations/${destination.photos?.[currentImageIndex]}`}
+            alt={destination.title}
+            style={{ width: "100%", height: "auto" }}
+          />
+
+          {/* Navigation Arrows inside dialog */}
+          {destination.photos?.length > 1 && (
+            <>
+              <IconButton
+                onClick={handlePrevImage}
+                sx={{
+                  position: "absolute",
+                  left: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "white",
+                  bgcolor: "rgba(0,0,0,0.4)",
+                }}
+              >
+                <ArrowBackIos />
+              </IconButton>
+              <IconButton
+                onClick={handleNextImage}
+                sx={{
+                  position: "absolute",
+                  right: 8,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  color: "white",
+                  bgcolor: "rgba(0,0,0,0.4)",
+                }}
+              >
+                <ArrowForwardIos />
+              </IconButton>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* --- Menu --- */}
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}

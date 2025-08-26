@@ -5,6 +5,7 @@ const {
   updateProfile,
   getProfilePhoto,
   getProfileByUserId,
+  deleteProfile,
 } = require("../controllers/profileController");
 const requireAuth = require("../middleware/requireAuth");
 const multer = require("multer");
@@ -32,6 +33,7 @@ router.post("/", upload.single("photo"), createProfile);
 router.get("/", getProfile);
 router.put("/", upload.single("photo"), updateProfile);
 router.get("/photo", getProfilePhoto);
+router.delete("/", deleteProfile);
 // GET /api/profile/user/:userId
 
 module.exports = router;

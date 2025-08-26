@@ -367,6 +367,7 @@ const categories = [
   { value: "city", label: "Cities" },
   { value: "religious", label: "Religious Sites" },
   { value: "adventure", label: "Adventure Sports" },
+  { value: "garden", label: "Gardens" },
 ];
 
 const DestinationForm = ({

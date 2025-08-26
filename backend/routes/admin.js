@@ -5,6 +5,7 @@ const {
   getAllUsers,
   getAllProfiles,
   getAllPosts,
+  getAllDestinations,
 } = require("../controllers/adminController");
 
 const requireAuth = require("../middleware/requireAuth"); // auth middleware
@@ -15,5 +16,6 @@ router.get("/dashboard", getDashboardStats);
 router.get("/users", getAllUsers);
 router.get("/profiles", getAllProfiles);
 router.get("/posts", getAllPosts);
+router.get("/destinations", getAllDestinations);
 
 module.exports = router;

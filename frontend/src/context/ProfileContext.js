@@ -14,6 +14,10 @@ const profilesReducer = (state, action) => {
           p._id === action.payload._id ? action.payload : p
         ),
       };
+    case "DELETE_PROFILE":
+      return {
+        profile: null,
+      };
     default:
       return state;
   }

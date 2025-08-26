@@ -21,24 +21,6 @@ const loginUser = async (req, res) => {
     res.status(400).json({ error: error.message });
   }
 };
-/*
-//signup user
-const signupUser = async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const user = await User.signup(email, password);
-
-    //create a token
-    const token = createToken(user._id);
-
-    // Automatically create a profile for the new user
-
-    res.status(200).json({ email, token });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-};*/
 
 const signupUser = async (req, res) => {
   const { email, password } = req.body; // ✅ no role here
@@ -51,4 +33,24 @@ const signupUser = async (req, res) => {
   }
 };
 
-module.exports = { loginUser, signupUser };
+const deleteAccount = async (req, res) => {
+  try {
+    const user_id = req.user._id;
+
+    // Delete user's profile first (if exists)
+    await Profile.findOneAndDelete({ user_id });
+
+    // Delete user account
+    const user = await User.findByIdAndDelete(user_id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "Account deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+module.exports = { loginUser, signupUser, deleteAccount };

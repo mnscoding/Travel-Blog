@@ -4,8 +4,6 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// ================= Multer Setup =================
-
 // Define upload path (for destinations only)
 const uploadPath = path.join(__dirname, "..", "uploads", "destinations");
 
@@ -36,8 +34,6 @@ const upload = multer({
     }
   },
 });
-
-// ================= Controllers =================
 
 // Get all destinations with filtering
 const getDestinations = async (req, res) => {
